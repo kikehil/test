@@ -8,14 +8,16 @@ async function initDatabase() {
   let connection;
   try {
     console.log('🔄 Inicializando base de datos...');
-    connection = await pool.getConnection();
     
-    // Ejecutar migraciones directamente
+    // Ejecutar migraciones directamente (migrate maneja su propia conexión)
     const migrate = require('./migrate');
     await migrate();
     
     // Ejecutar seeders solo si no hay datos
-    const [usuarios] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
+    connection = await pool.getConnection();
+    const [usuarios] = await connection.query('SELECT COUNT(*) as count FROM usuarios');
+    connection.release();
+    
     if (usuarios[0].count === 0) {
       console.log('🌱 Ejecutando seeders...');
       const seed = require('./seed');
@@ -27,10 +29,9 @@ async function initDatabase() {
     console.log('✅ Base de datos inicializada correctamente');
   } catch (error) {
     console.error('❌ Error inicializando base de datos:', error.message);
+    if (connection) connection.release();
     // No lanzar error para que el servidor pueda iniciar
     // En producción, Railway puede tener la BD ya configurada
-  } finally {
-    if (connection) connection.release();
   }
 }
 

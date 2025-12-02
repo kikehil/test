@@ -3,9 +3,25 @@ require('dotenv').config();
 
 async function migrate() {
   let connection;
+  let shouldRelease = true;
   
   try {
-    connection = await pool.getConnection();
+    // Intentar obtener conexión del pool
+    try {
+      connection = await pool.getConnection();
+    } catch (e) {
+      // Si no hay pool disponible, crear uno temporal
+      const mysql = require('mysql2/promise');
+      connection = await mysql.createConnection({
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'crm_cotizaciones',
+        port: process.env.DB_PORT || 3306
+      });
+      shouldRelease = false;
+    }
+    
     console.log('🔄 Iniciando migraciones...');
 
     // Tabla de empresas (multi-empresa)
@@ -115,7 +131,7 @@ async function migrate() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE,
         FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE RESTRICT,
-        FOREIGN KEY (created_by) REFERENCES usuarios(id) ON SET NULL,
+        FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
         INDEX idx_empresa (empresa_id),
         INDEX idx_cliente (cliente_id),
         INDEX idx_folio (folio),
@@ -196,7 +212,7 @@ async function migrate() {
         usuario_id INT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON SET NULL,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
         INDEX idx_cotizacion (cotizacion_id),
         INDEX idx_tipo (tipo_evento)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
