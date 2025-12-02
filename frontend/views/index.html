@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Cotizaciones - Dashboard</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-2xl font-bold text-primary-600">CRM Cotizaciones</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/index.html" class="border-primary-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/cotizaciones.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Cotizaciones
+                        </a>
+                        <a href="/clientes.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Clientes
+                        </a>
+                        <a href="/productos.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Productos
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span id="usuarioNombre" class="text-sm text-gray-700 mr-4"></span>
+                    <button onclick="authAPI.logout()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Estadísticas principales -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Cotizado</dt>
+                                <dd id="totalCotizado" class="text-lg font-medium text-gray-900">$0.00</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Aceptado</dt>
+                                <dd id="totalAceptado" class="text-lg font-medium text-gray-900">$0.00</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Pagado</dt>
+                                <dd id="totalPagado" class="text-lg font-medium text-gray-900">$0.00</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfica y Tablas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Gráfica Mensual -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Cotizaciones Mensuales</h2>
+                <canvas id="graficaMensual"></canvas>
+            </div>
+
+            <!-- Cotizaciones por Estatus -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Por Estatus</h2>
+                <div id="porEstatus" class="space-y-2">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tablas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Top Clientes -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Top 5 Clientes</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cotizaciones</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topClientes" class="bg-white divide-y divide-gray-200">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Cotizaciones Recientes -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Cotizaciones Recientes</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Folio</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cotizacionesRecientes" class="bg-white divide-y divide-gray-200">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script>
+        // Verificar autenticación
+        if (!localStorage.getItem('accessToken')) {
+            window.location.href = '/login.html';
+        }
+
+        // Cargar datos del dashboard
+        async function cargarDashboard() {
+            try {
+                const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+                document.getElementById('usuarioNombre').textContent = usuario.nombre || 'Usuario';
+
+                const datos = await dashboardAPI.obtenerEstadisticas();
+
+                // Actualizar totales
+                document.getElementById('totalCotizado').textContent = utils.formatearMoneda(datos.totales.cotizado);
+                document.getElementById('totalAceptado').textContent = utils.formatearMoneda(datos.totales.aceptado);
+                document.getElementById('totalPagado').textContent = utils.formatearMoneda(datos.totales.pagado);
+
+                // Gráfica mensual
+                const ctx = document.getElementById('graficaMensual').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: datos.mensual.map(m => m.mes),
+                        datasets: [{
+                            label: 'Total Cotizado',
+                            data: datos.mensual.map(m => m.total),
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Por estatus
+                const porEstatusDiv = document.getElementById('porEstatus');
+                porEstatusDiv.innerHTML = datos.porEstatus.map(e => `
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span class="font-medium">${e.estado}</span>
+                        <span class="text-gray-600">${e.cantidad} - ${utils.formatearMoneda(e.total)}</span>
+                    </div>
+                `).join('');
+
+                // Top clientes
+                const topClientesTbody = document.getElementById('topClientes');
+                topClientesTbody.innerHTML = datos.topClientes.map(c => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${c.nombre_razon_social}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.cantidad_cotizaciones}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${utils.formatearMoneda(c.total_cotizado)}</td>
+                    </tr>
+                `).join('');
+
+                // Cotizaciones recientes
+                const recientesTbody = document.getElementById('cotizacionesRecientes');
+                recientesTbody.innerHTML = datos.recientes.map(c => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${c.folio}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.cliente_nombre}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                c.estado === 'Aceptada' ? 'bg-green-100 text-green-800' :
+                                c.estado === 'Rechazada' ? 'bg-red-100 text-red-800' :
+                                c.estado === 'Enviada' ? 'bg-blue-100 text-blue-800' :
+                                'bg-yellow-100 text-yellow-800'
+                            }">
+                                ${c.estado}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${utils.formatearMoneda(c.total)}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+                utils.mostrarError('Error al cargar el dashboard');
+            }
+        }
+
+        // Cargar al iniciar
+        cargarDashboard();
+    </script>
+</body>
+</html>
+

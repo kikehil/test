@@ -1,0 +1,14 @@
+# Configuración para Railway
+# Railway detecta automáticamente Node.js, pero puedes personalizar aquí
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Healthcheck (opcional)
+# Railway verificará automáticamente /api/health
+

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Cotizaciones - Clientes</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-2xl font-bold text-primary-600">CRM Cotizaciones</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/cotizaciones.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Cotizaciones
+                        </a>
+                        <a href="/clientes.html" class="border-primary-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Clientes
+                        </a>
+                        <a href="/productos.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Productos
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span id="usuarioNombre" class="text-sm text-gray-700 mr-4"></span>
+                    <button onclick="authAPI.logout()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Clientes</h2>
+            <button onclick="abrirModalNuevoCliente()" class="btn-primary">
+                Nuevo Cliente
+            </button>
+        </div>
+
+        <!-- Buscador -->
+        <div class="bg-white shadow rounded-lg p-4 mb-6">
+            <input type="text" id="buscarCliente" class="input-field" placeholder="Buscar por nombre, email o RFC..." onkeyup="cargarClientes()">
+        </div>
+
+        <!-- Tabla de clientes -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="table-header">Nombre / Razón Social</th>
+                        <th class="table-header">RFC</th>
+                        <th class="table-header">Email</th>
+                        <th class="table-header">Teléfono</th>
+                        <th class="table-header">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaClientes" class="bg-white divide-y divide-gray-200">
+                    <!-- Se llena dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal Nuevo Cliente -->
+    <div id="modalNuevoCliente" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Nuevo Cliente</h3>
+                <form id="formNuevoCliente" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre / Razón Social *</label>
+                            <input type="text" name="nombre_razon_social" required class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">RFC</label>
+                            <input type="text" name="rfc" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                            <input type="tel" name="telefono" class="input-field">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                            <textarea name="direccion" class="input-field" rows="2"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Giro</label>
+                            <input type="text" name="giro" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Contacto Principal</label>
+                            <input type="text" name="contacto_principal" class="input-field">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="cerrarModalCliente()" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        if (!localStorage.getItem('accessToken')) {
+            window.location.href = '/login.html';
+        }
+
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        document.getElementById('usuarioNombre').textContent = usuario.nombre || 'Usuario';
+
+        async function cargarClientes() {
+            try {
+                const buscar = document.getElementById('buscarCliente').value;
+                const params = buscar ? { buscar } : {};
+                const datos = await clientesAPI.obtenerTodos(params);
+                const tbody = document.getElementById('tablaClientes');
+
+                tbody.innerHTML = datos.clientes.map(c => `
+                    <tr>
+                        <td class="table-cell font-medium">${c.nombre_razon_social}</td>
+                        <td class="table-cell">${c.rfc || '-'}</td>
+                        <td class="table-cell">${c.email || '-'}</td>
+                        <td class="table-cell">${c.telefono || '-'}</td>
+                        <td class="table-cell">
+                            <button onclick="verCliente(${c.id})" class="text-primary-600 hover:text-primary-800 mr-2">Ver</button>
+                            ${(usuario.rol === 'ADMIN' || usuario.rol === 'VENTAS') ? `
+                                <button onclick="editarCliente(${c.id})" class="text-blue-600 hover:text-blue-800 mr-2">Editar</button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error cargando clientes:', error);
+                utils.mostrarError('Error al cargar clientes');
+            }
+        }
+
+        function abrirModalNuevoCliente() {
+            if (usuario.rol === 'LECTURA') {
+                utils.mostrarError('No tienes permisos para crear clientes');
+                return;
+            }
+            document.getElementById('formNuevoCliente').reset();
+            document.getElementById('modalNuevoCliente').classList.remove('hidden');
+        }
+
+        function cerrarModalCliente() {
+            document.getElementById('modalNuevoCliente').classList.add('hidden');
+        }
+
+        document.getElementById('formNuevoCliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const cliente = Object.fromEntries(formData);
+
+            try {
+                await clientesAPI.crear(cliente);
+                utils.mostrarExito('Cliente creado exitosamente');
+                cerrarModalCliente();
+                cargarClientes();
+            } catch (error) {
+                utils.mostrarError(error.message);
+            }
+        });
+
+        function verCliente(id) {
+            window.location.href = `/cliente-detalle.html?id=${id}`;
+        }
+
+        function editarCliente(id) {
+            // Implementar edición
+            alert('Funcionalidad de edición disponible en la API');
+        }
+
+        cargarClientes();
+    </script>
+</body>
+</html>
+
