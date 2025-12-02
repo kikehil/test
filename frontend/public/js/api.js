@@ -1,5 +1,5 @@
 // Configuración de la API
-const API_BASE_URL = '/api';
+const API_BASE_URL = window.location.origin + '/api';
 
 // Función para obtener el token de autenticación
 function getAuthToken() {
