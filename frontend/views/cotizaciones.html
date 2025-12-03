@@ -57,7 +57,7 @@
                 </div>
                 <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Cotizaciones</h2>
             </div>
-            <button onclick="abrirModalNuevaCotizacion()" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold transform hover:-translate-y-0.5">
+            <button id="btnNuevaCotizacion" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold transform hover:-translate-y-0.5">
                 <i class="fas fa-plus mr-2"></i>Nueva Cotización
             </button>
         </div>
@@ -193,6 +193,78 @@
         const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
         document.getElementById('usuarioNombre').textContent = usuario.nombre || 'Usuario';
 
+        // DEFINIR FUNCIÓN GLOBALMENTE AL INICIO - VERSIÓN COMPLETA
+        let partidasContador = 0;
+        let productosDisponibles = [];
+        
+        window.abrirModalNuevaCotizacion = async function() {
+            console.log('=== abrirModalNuevaCotizacion EJECUTADO ===');
+            try {
+                const usuarioActual = JSON.parse(localStorage.getItem('usuario') || '{}');
+                if (usuarioActual.rol === 'LECTURA') {
+                    alert('No tienes permisos para crear cotizaciones');
+                    return;
+                }
+                
+                const modal = document.getElementById('modalNuevaCotizacion');
+                if (!modal) {
+                    alert('Error: No se encontró el formulario. Recarga la página.');
+                    return;
+                }
+                
+                modal.classList.remove('hidden');
+                
+                // Cargar datos
+                try {
+                    const datosClientes = await clientesAPI.obtenerTodos({ limite: 100 });
+                    const select = document.getElementById('selectCliente');
+                    if (select) {
+                        select.innerHTML = '<option value="">Seleccionar cliente...</option>';
+                        datosClientes.clientes.forEach(cliente => {
+                            const option = document.createElement('option');
+                            option.value = cliente.id;
+                            option.textContent = cliente.nombre_razon_social;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error cargando clientes:', error);
+                }
+                
+                try {
+                    const datosProductos = await productosAPI.obtenerTodos({ limite: 100 });
+                    productosDisponibles = datosProductos.productos || [];
+                } catch (error) {
+                    console.error('Error cargando productos:', error);
+                }
+                
+                // Limpiar formulario
+                const form = document.getElementById('formNuevaCotizacion');
+                if (form) {
+                    form.reset();
+                    const fechaInput = form.querySelector('[name="fecha"]');
+                    if (fechaInput) {
+                        fechaInput.value = new Date().toISOString().split('T')[0];
+                    }
+                }
+                
+                // Limpiar partidas
+                const partidasContainer = document.getElementById('partidasContainer');
+                if (partidasContainer) {
+                    partidasContainer.innerHTML = '';
+                }
+                partidasContador = 0;
+                
+                // Agregar primera partida si la función existe
+                if (typeof agregarPartida === 'function') {
+                    agregarPartida();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        };
+
         async function cargarCotizaciones() {
             try {
                 console.log('Iniciando carga de cotizaciones...');
@@ -319,8 +391,9 @@
         let partidasContador = 0;
         let productosDisponibles = [];
 
-        async function abrirModalNuevaCotizacion() {
-            console.log('abrirModalNuevaCotizacion llamado');
+        // Definir función globalmente ANTES de usarla
+        window.abrirModalNuevaCotizacion = async function() {
+            console.log('=== abrirModalNuevaCotizacion llamado ===');
             try {
                 // Verificar usuario
                 const usuarioActual = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -397,10 +470,10 @@
                 console.error('Stack:', error.stack);
                 alert('Error al abrir el formulario: ' + error.message);
             }
-        }
+        };
         
-        // Asegurar que la función esté disponible globalmente
-        window.abrirModalNuevaCotizacion = abrirModalNuevaCotizacion;
+        // También crear una referencia local
+        const abrirModalNuevaCotizacion = window.abrirModalNuevaCotizacion;
 
         async function cargarClientesParaSelect() {
             try {
@@ -630,6 +703,38 @@
         window.verCotizacion = verCotizacion;
         window.enviarCorreo = enviarCorreo;
         window.abrirModalNuevaCotizacion = abrirModalNuevaCotizacion;
+
+        // Agregar event listener al botón de nueva cotización
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnNuevaCotizacion = document.getElementById('btnNuevaCotizacion');
+            if (btnNuevaCotizacion) {
+                console.log('Botón encontrado, agregando event listener');
+                btnNuevaCotizacion.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Click en botón Nueva Cotización detectado');
+                    abrirModalNuevaCotizacion();
+                });
+                // También mantener onclick como fallback
+                btnNuevaCotizacion.onclick = (e) => {
+                    e.preventDefault();
+                    console.log('onclick en botón Nueva Cotización');
+                    abrirModalNuevaCotizacion();
+                };
+            } else {
+                console.error('No se encontró el botón btnNuevaCotizacion');
+            }
+        });
+
+        // También agregar listener inmediatamente si el DOM ya está listo
+        const btnNuevaCotizacion = document.getElementById('btnNuevaCotizacion');
+        if (btnNuevaCotizacion) {
+            console.log('Botón encontrado inmediatamente, agregando event listener');
+            btnNuevaCotizacion.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Click en botón Nueva Cotización detectado (listener inmediato)');
+                abrirModalNuevaCotizacion();
+            });
+        }
 
         // Cargar cotizaciones al iniciar
         console.log('Estado del documento:', document.readyState);
