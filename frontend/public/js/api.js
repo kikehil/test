@@ -156,7 +156,34 @@ const cotizacionesAPI = {
   },
   generarPDF: async (id) => {
     const token = getAuthToken();
-    window.open(`${API_BASE_URL}/cotizaciones/${id}/pdf?token=${token}`, '_blank');
+    if (!token) {
+      utils.mostrarError('Debes iniciar sesión para generar PDFs');
+      return;
+    }
+    // Crear un enlace temporal con el token en el header
+    const link = document.createElement('a');
+    link.href = `${API_BASE_URL}/cotizaciones/${id}/pdf`;
+    link.target = '_blank';
+    // Usar fetch para obtener el PDF con el token
+    fetch(`${API_BASE_URL}/cotizaciones/${id}/pdf`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Error al generar PDF');
+      return response.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      link.href = url;
+      link.download = `cotizacion_${id}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+      utils.mostrarError('Error al generar PDF: ' + error.message);
+    });
   },
   enviarPorCorreo: async (id) => {
     return apiRequest(`/cotizaciones/${id}/enviar`, {

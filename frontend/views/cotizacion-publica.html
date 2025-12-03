@@ -134,8 +134,20 @@
             }
         }
 
-        function generarPDF() {
-            window.open(`/cotizacion/${token}/pdf`, '_blank');
+        async function generarPDF() {
+            try {
+                const response = await fetch(`/cotizacion/${token}/pdf`);
+                if (!response.ok) throw new Error('Error al generar PDF');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `cotizacion_${token}.pdf`;
+                link.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error al generar PDF: ' + error.message);
+            }
         }
 
         async function aceptarCotizacion() {
