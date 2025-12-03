@@ -153,6 +153,8 @@
                 utils.mostrarError('No tienes permisos para crear productos');
                 return;
             }
+            // Restaurar título del modal
+            document.querySelector('#modalNuevoProducto h3').textContent = 'Nuevo Producto';
             document.getElementById('formNuevoProducto').reset();
             document.getElementById('modalNuevoProducto').classList.remove('hidden');
         }
@@ -177,8 +179,45 @@
             }
         });
 
-        function editarProducto(id) {
-            alert('Funcionalidad de edición disponible en la API');
+        async function editarProducto(id) {
+            try {
+                const datos = await productosAPI.obtenerPorId(id);
+                const producto = datos.producto;
+                
+                // Llenar el formulario con los datos del producto
+                document.getElementById('formNuevoProducto').querySelector('[name="nombre"]').value = producto.nombre || '';
+                document.getElementById('formNuevoProducto').querySelector('[name="descripcion"]').value = producto.descripcion || '';
+                document.getElementById('formNuevoProducto').querySelector('[name="precio_unitario"]').value = producto.precio_unitario || '';
+                document.getElementById('formNuevoProducto').querySelector('[name="unidad"]').value = producto.unidad || '';
+                document.getElementById('formNuevoProducto').querySelector('[name="categoria"]').value = producto.categoria || '';
+                
+                // Cambiar el título del modal
+                document.querySelector('#modalNuevoProducto h3').textContent = 'Editar Producto';
+                
+                // Modificar el submit para actualizar
+                const form = document.getElementById('formNuevoProducto');
+                const oldSubmit = form.onsubmit;
+                form.onsubmit = async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const productoData = Object.fromEntries(formData);
+                    productoData.precio_unitario = parseFloat(productoData.precio_unitario);
+                    
+                    try {
+                        await productosAPI.actualizar(id, productoData);
+                        utils.mostrarExito('Producto actualizado exitosamente');
+                        cerrarModalProducto();
+                        cargarProductos();
+                        form.onsubmit = oldSubmit; // Restaurar el handler original
+                    } catch (error) {
+                        utils.mostrarError(error.message);
+                    }
+                };
+                
+                abrirModalNuevoProducto();
+            } catch (error) {
+                utils.mostrarError('Error al cargar datos del producto: ' + error.message);
+            }
         }
 
         cargarProductos();

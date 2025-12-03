@@ -160,6 +160,8 @@
                 utils.mostrarError('No tienes permisos para crear clientes');
                 return;
             }
+            // Restaurar título del modal
+            document.querySelector('#modalNuevoCliente h3').textContent = 'Nuevo Cliente';
             document.getElementById('formNuevoCliente').reset();
             document.getElementById('modalNuevoCliente').classList.remove('hidden');
         }
@@ -187,9 +189,46 @@
             window.location.href = `/cliente-detalle.html?id=${id}`;
         }
 
-        function editarCliente(id) {
-            // Implementar edición
-            alert('Funcionalidad de edición disponible en la API');
+        async function editarCliente(id) {
+            try {
+                const datos = await clientesAPI.obtenerPorId(id);
+                const cliente = datos.cliente;
+                
+                // Llenar el formulario con los datos del cliente
+                document.getElementById('formNuevoCliente').querySelector('[name="nombre_razon_social"]').value = cliente.nombre_razon_social || '';
+                document.getElementById('formNuevoCliente').querySelector('[name="rfc"]').value = cliente.rfc || '';
+                document.getElementById('formNuevoCliente').querySelector('[name="email"]').value = cliente.email || '';
+                document.getElementById('formNuevoCliente').querySelector('[name="telefono"]').value = cliente.telefono || '';
+                document.getElementById('formNuevoCliente').querySelector('[name="direccion"]').value = cliente.direccion || '';
+                document.getElementById('formNuevoCliente').querySelector('[name="giro"]').value = cliente.giro || '';
+                document.getElementById('formNuevoCliente').querySelector('[name="contacto_principal"]').value = cliente.contacto_principal || '';
+                
+                // Cambiar el título del modal
+                document.querySelector('#modalNuevoCliente h3').textContent = 'Editar Cliente';
+                
+                // Modificar el submit para actualizar en lugar de crear
+                const form = document.getElementById('formNuevoCliente');
+                const oldSubmit = form.onsubmit;
+                form.onsubmit = async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const clienteData = Object.fromEntries(formData);
+                    
+                    try {
+                        await clientesAPI.actualizar(id, clienteData);
+                        utils.mostrarExito('Cliente actualizado exitosamente');
+                        cerrarModalCliente();
+                        cargarClientes();
+                        form.onsubmit = oldSubmit; // Restaurar el handler original
+                    } catch (error) {
+                        utils.mostrarError(error.message);
+                    }
+                };
+                
+                abrirModalNuevoCliente();
+            } catch (error) {
+                utils.mostrarError('Error al cargar datos del cliente: ' + error.message);
+            }
         }
 
         cargarClientes();
