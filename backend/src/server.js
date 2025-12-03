@@ -78,6 +78,10 @@ app.get('/productos.html', (req, res) => {
   res.sendFile(path.join(viewsPath, 'productos.html'));
 });
 
+app.get('/cotizacion-detalle.html', (req, res) => {
+  res.sendFile(path.join(viewsPath, 'cotizacion-detalle.html'));
+});
+
 // Ruta pública para ver cotizaciones (sin .html)
 app.get('/cotizacion/:token/public', (req, res) => {
   res.sendFile(path.join(viewsPath, 'cotizacion-publica.html'));
