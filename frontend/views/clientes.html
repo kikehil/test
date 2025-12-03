@@ -160,6 +160,8 @@
                 utils.mostrarError('No tienes permisos para crear clientes');
                 return;
             }
+            // Limpiar ID de edición
+            clienteEditandoId = null;
             // Restaurar título del modal
             document.querySelector('#modalNuevoCliente h3').textContent = 'Nuevo Cliente';
             document.getElementById('formNuevoCliente').reset();
@@ -167,6 +169,7 @@
         }
 
         function cerrarModalCliente() {
+            clienteEditandoId = null;
             document.getElementById('modalNuevoCliente').classList.add('hidden');
         }
 
@@ -176,8 +179,16 @@
             const cliente = Object.fromEntries(formData);
 
             try {
-                await clientesAPI.crear(cliente);
-                utils.mostrarExito('Cliente creado exitosamente');
+                if (clienteEditandoId) {
+                    // Actualizar cliente existente
+                    await clientesAPI.actualizar(clienteEditandoId, cliente);
+                    utils.mostrarExito('Cliente actualizado exitosamente');
+                    clienteEditandoId = null;
+                } else {
+                    // Crear nuevo cliente
+                    await clientesAPI.crear(cliente);
+                    utils.mostrarExito('Cliente creado exitosamente');
+                }
                 cerrarModalCliente();
                 cargarClientes();
             } catch (error) {
@@ -186,46 +197,47 @@
         });
 
         function verCliente(id) {
-            window.location.href = `/cliente-detalle.html?id=${id}`;
+            // Mostrar información del cliente en un modal o alert temporal
+            clientesAPI.obtenerPorId(id).then(datos => {
+                const cliente = datos.cliente;
+                const mensaje = `
+Cliente: ${cliente.nombre_razon_social}
+RFC: ${cliente.rfc || 'N/A'}
+Email: ${cliente.email || 'N/A'}
+Teléfono: ${cliente.telefono || 'N/A'}
+Dirección: ${cliente.direccion || 'N/A'}
+Giro: ${cliente.giro || 'N/A'}
+Contacto Principal: ${cliente.contacto_principal || 'N/A'}
+Fecha de Alta: ${utils.formatearFecha(cliente.fecha_alta)}
+                `.trim();
+                alert(mensaje);
+            }).catch(error => {
+                utils.mostrarError('Error al cargar cliente: ' + error.message);
+            });
         }
+
+        let clienteEditandoId = null;
 
         async function editarCliente(id) {
             try {
+                clienteEditandoId = id;
                 const datos = await clientesAPI.obtenerPorId(id);
                 const cliente = datos.cliente;
                 
                 // Llenar el formulario con los datos del cliente
-                document.getElementById('formNuevoCliente').querySelector('[name="nombre_razon_social"]').value = cliente.nombre_razon_social || '';
-                document.getElementById('formNuevoCliente').querySelector('[name="rfc"]').value = cliente.rfc || '';
-                document.getElementById('formNuevoCliente').querySelector('[name="email"]').value = cliente.email || '';
-                document.getElementById('formNuevoCliente').querySelector('[name="telefono"]').value = cliente.telefono || '';
-                document.getElementById('formNuevoCliente').querySelector('[name="direccion"]').value = cliente.direccion || '';
-                document.getElementById('formNuevoCliente').querySelector('[name="giro"]').value = cliente.giro || '';
-                document.getElementById('formNuevoCliente').querySelector('[name="contacto_principal"]').value = cliente.contacto_principal || '';
+                document.querySelector('#formNuevoCliente [name="nombre_razon_social"]').value = cliente.nombre_razon_social || '';
+                document.querySelector('#formNuevoCliente [name="rfc"]').value = cliente.rfc || '';
+                document.querySelector('#formNuevoCliente [name="email"]').value = cliente.email || '';
+                document.querySelector('#formNuevoCliente [name="telefono"]').value = cliente.telefono || '';
+                document.querySelector('#formNuevoCliente [name="direccion"]').value = cliente.direccion || '';
+                document.querySelector('#formNuevoCliente [name="giro"]').value = cliente.giro || '';
+                document.querySelector('#formNuevoCliente [name="contacto_principal"]').value = cliente.contacto_principal || '';
                 
                 // Cambiar el título del modal
                 document.querySelector('#modalNuevoCliente h3').textContent = 'Editar Cliente';
                 
-                // Modificar el submit para actualizar en lugar de crear
-                const form = document.getElementById('formNuevoCliente');
-                const oldSubmit = form.onsubmit;
-                form.onsubmit = async (e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.target);
-                    const clienteData = Object.fromEntries(formData);
-                    
-                    try {
-                        await clientesAPI.actualizar(id, clienteData);
-                        utils.mostrarExito('Cliente actualizado exitosamente');
-                        cerrarModalCliente();
-                        cargarClientes();
-                        form.onsubmit = oldSubmit; // Restaurar el handler original
-                    } catch (error) {
-                        utils.mostrarError(error.message);
-                    }
-                };
-                
-                abrirModalNuevoCliente();
+                // Abrir el modal
+                document.getElementById('modalNuevoCliente').classList.remove('hidden');
             } catch (error) {
                 utils.mostrarError('Error al cargar datos del cliente: ' + error.message);
             }
