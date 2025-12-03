@@ -95,16 +95,78 @@
         </div>
     </main>
 
-    <!-- Modal Nueva Cotización (simplificado) -->
+    <!-- Modal Nueva Cotización -->
     <div id="modalNuevaCotizacion" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Nueva Cotización</h3>
-                <p class="text-gray-600 mb-4">Para crear una nueva cotización, puedes usar la API directamente o implementar el formulario completo.</p>
-                <p class="text-sm text-gray-500 mb-4">Endpoint: <code class="bg-gray-100 px-2 py-1 rounded">POST /api/cotizaciones</code></p>
-                <div class="flex justify-end">
-                    <button onclick="cerrarModal()" class="btn-secondary">Cerrar</button>
-                </div>
+                <form id="formNuevaCotizacion" class="space-y-4">
+                    <!-- Datos generales -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
+                            <select id="selectCliente" name="cliente_id" required class="input-field">
+                                <option value="">Seleccionar cliente...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
+                            <input type="date" name="fecha" required class="input-field" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Vencimiento</label>
+                            <input type="date" name="fecha_vencimiento" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Contacto del Cliente</label>
+                            <input type="text" name="contacto_cliente" class="input-field" placeholder="Nombre del contacto">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Condiciones de Pago</label>
+                            <input type="text" name="condiciones_pago" class="input-field" placeholder="Ej: 30 días">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Validez</label>
+                            <input type="text" name="validez" class="input-field" placeholder="Ej: 30 días">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notas</label>
+                        <textarea name="notas" class="input-field" rows="3" placeholder="Notas adicionales..."></textarea>
+                    </div>
+
+                    <!-- Partidas -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Partidas *</label>
+                            <button type="button" onclick="agregarPartida()" class="text-sm btn-primary">+ Agregar Partida</button>
+                        </div>
+                        <div id="partidasContainer" class="space-y-2">
+                            <!-- Las partidas se agregan aquí dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Totales -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex justify-end space-x-4">
+                            <div class="text-right">
+                                <p class="text-sm text-gray-600">Subtotal:</p>
+                                <p class="text-sm text-gray-600">IVA (16%):</p>
+                                <p class="text-lg font-bold text-gray-900">Total:</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium" id="subtotalPreview">$0.00</p>
+                                <p class="text-sm font-medium" id="ivaPreview">$0.00</p>
+                                <p class="text-lg font-bold text-primary-600" id="totalPreview">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="cerrarModal()" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Crear Cotización</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -174,9 +236,216 @@
             window.location.href = `/cotizacion-detalle.html?id=${id}`;
         }
 
-        function abrirModalNuevaCotizacion() {
+        let partidasContador = 0;
+        let productosDisponibles = [];
+
+        async function abrirModalNuevaCotizacion() {
+            if (usuario.rol === 'LECTURA') {
+                utils.mostrarError('No tienes permisos para crear cotizaciones');
+                return;
+            }
+            
+            // Cargar clientes y productos
+            await cargarClientesParaSelect();
+            await cargarProductos();
+            
+            // Limpiar formulario
+            document.getElementById('formNuevaCotizacion').reset();
+            document.getElementById('partidasContainer').innerHTML = '';
+            partidasContador = 0;
+            actualizarTotales();
+            
+            // Agregar primera partida
+            agregarPartida();
+            
             document.getElementById('modalNuevaCotizacion').classList.remove('hidden');
         }
+
+        async function cargarClientesParaSelect() {
+            try {
+                const datos = await clientesAPI.obtenerTodos({ limite: 100 });
+                const select = document.getElementById('selectCliente');
+                select.innerHTML = '<option value="">Seleccionar cliente...</option>';
+                datos.clientes.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.id;
+                    option.textContent = cliente.nombre_razon_social;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error cargando clientes:', error);
+            }
+        }
+
+        async function cargarProductos() {
+            try {
+                const datos = await productosAPI.obtenerTodos({ activo: 'true', limite: 100 });
+                productosDisponibles = datos.productos;
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+            }
+        }
+
+        function agregarPartida() {
+            partidasContador++;
+            const container = document.getElementById('partidasContainer');
+            const partidaDiv = document.createElement('div');
+            partidaDiv.className = 'bg-gray-50 p-3 rounded-lg border';
+            partidaDiv.id = `partida-${partidasContador}`;
+            partidaDiv.innerHTML = `
+                <div class="grid grid-cols-12 gap-2 items-end">
+                    <div class="col-span-2">
+                        <label class="block text-xs text-gray-600 mb-1">Cantidad</label>
+                        <input type="number" step="0.01" min="0" value="1" class="input-field partida-cantidad" onchange="calcularPartida(${partidasContador})" oninput="calcularPartida(${partidasContador})">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs text-gray-600 mb-1">Unidad</label>
+                        <input type="text" value="PZA" class="input-field partida-unidad" placeholder="PZA">
+                    </div>
+                    <div class="col-span-4">
+                        <label class="block text-xs text-gray-600 mb-1">Descripción *</label>
+                        <input type="text" class="input-field partida-descripcion" required placeholder="Descripción del producto/servicio" onchange="buscarProducto(${partidasContador})">
+                        <div id="sugerencias-${partidasContador}" class="hidden absolute z-10 bg-white border rounded shadow-lg mt-1 max-h-40 overflow-y-auto"></div>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs text-gray-600 mb-1">P. Unitario</label>
+                        <input type="number" step="0.01" min="0" value="0" class="input-field partida-precio" onchange="calcularPartida(${partidasContador})" oninput="calcularPartida(${partidasContador})">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs text-gray-600 mb-1">Subtotal</label>
+                        <input type="text" class="input-field partida-subtotal" readonly value="$0.00">
+                    </div>
+                    <div class="col-span-1">
+                        <button type="button" onclick="eliminarPartida(${partidasContador})" class="text-red-600 hover:text-red-800">✕</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(partidaDiv);
+            calcularPartida(partidasContador);
+        }
+
+        function eliminarPartida(id) {
+            document.getElementById(`partida-${id}`).remove();
+            actualizarTotales();
+        }
+
+        function calcularPartida(id) {
+            const partidaDiv = document.getElementById(`partida-${id}`);
+            const cantidad = parseFloat(partidaDiv.querySelector('.partida-cantidad').value) || 0;
+            const precio = parseFloat(partidaDiv.querySelector('.partida-precio').value) || 0;
+            const subtotal = cantidad * precio;
+            partidaDiv.querySelector('.partida-subtotal').value = utils.formatearMoneda(subtotal);
+            actualizarTotales();
+        }
+
+        function buscarProducto(id) {
+            const partidaDiv = document.getElementById(`partida-${id}`);
+            const descripcion = partidaDiv.querySelector('.partida-descripcion').value.toLowerCase();
+            const sugerenciasDiv = document.getElementById(`sugerencias-${id}`);
+            
+            if (descripcion.length < 2) {
+                sugerenciasDiv.classList.add('hidden');
+                return;
+            }
+
+            const matches = productosDisponibles.filter(p => 
+                p.nombre.toLowerCase().includes(descripcion) || 
+                (p.descripcion && p.descripcion.toLowerCase().includes(descripcion))
+            ).slice(0, 5);
+
+            if (matches.length === 0) {
+                sugerenciasDiv.classList.add('hidden');
+                return;
+            }
+
+            sugerenciasDiv.innerHTML = matches.map(p => `
+                <div class="p-2 hover:bg-gray-100 cursor-pointer" onclick="seleccionarProducto(${id}, ${p.id})">
+                    <div class="font-medium">${p.nombre}</div>
+                    <div class="text-xs text-gray-500">${utils.formatearMoneda(p.precio_unitario)} ${p.unidad}</div>
+                </div>
+            `).join('');
+            sugerenciasDiv.classList.remove('hidden');
+        }
+
+        function seleccionarProducto(partidaId, productoId) {
+            const producto = productosDisponibles.find(p => p.id === productoId);
+            if (!producto) return;
+
+            const partidaDiv = document.getElementById(`partida-${partidaId}`);
+            partidaDiv.querySelector('.partida-descripcion').value = producto.nombre;
+            partidaDiv.querySelector('.partida-precio').value = producto.precio_unitario;
+            partidaDiv.querySelector('.partida-unidad').value = producto.unidad || 'PZA';
+            document.getElementById(`sugerencias-${partidaId}`).classList.add('hidden');
+            calcularPartida(partidaId);
+        }
+
+        function actualizarTotales() {
+            let subtotal = 0;
+            document.querySelectorAll('.partida-subtotal').forEach(input => {
+                const valor = input.value.replace('$', '').replace(',', '');
+                subtotal += parseFloat(valor) || 0;
+            });
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+
+            document.getElementById('subtotalPreview').textContent = utils.formatearMoneda(subtotal);
+            document.getElementById('ivaPreview').textContent = utils.formatearMoneda(iva);
+            document.getElementById('totalPreview').textContent = utils.formatearMoneda(total);
+        }
+
+        document.getElementById('formNuevaCotizacion').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Validar que haya al menos una partida
+            if (partidasContador === 0 || document.querySelectorAll('.partida-descripcion').length === 0) {
+                utils.mostrarError('Debes agregar al menos una partida');
+                return;
+            }
+
+            // Recopilar datos del formulario
+            const formData = new FormData(e.target);
+            const cotizacion = {
+                fecha: formData.get('fecha'),
+                fecha_vencimiento: formData.get('fecha_vencimiento') || null,
+                cliente_id: parseInt(formData.get('cliente_id')),
+                contacto_cliente: formData.get('contacto_cliente') || null,
+                condiciones_pago: formData.get('condiciones_pago') || null,
+                validez: formData.get('validez') || null,
+                notas: formData.get('notas') || null,
+                partidas: []
+            };
+
+            // Recopilar partidas
+            document.querySelectorAll('[id^="partida-"]').forEach(partidaDiv => {
+                const cantidad = parseFloat(partidaDiv.querySelector('.partida-cantidad').value) || 0;
+                const unidad = partidaDiv.querySelector('.partida-unidad').value || 'PZA';
+                const descripcion = partidaDiv.querySelector('.partida-descripcion').value;
+                const precioUnitario = parseFloat(partidaDiv.querySelector('.partida-precio').value) || 0;
+
+                if (descripcion && cantidad > 0 && precioUnitario > 0) {
+                    cotizacion.partidas.push({
+                        cantidad,
+                        unidad,
+                        descripcion,
+                        precio_unitario: precioUnitario
+                    });
+                }
+            });
+
+            if (cotizacion.partidas.length === 0) {
+                utils.mostrarError('Debes agregar al menos una partida válida');
+                return;
+            }
+
+            try {
+                const resultado = await cotizacionesAPI.crear(cotizacion);
+                utils.mostrarExito('Cotización creada exitosamente');
+                cerrarModal();
+                cargarCotizaciones();
+            } catch (error) {
+                utils.mostrarError(error.message || 'Error al crear cotización');
+            }
+        });
 
         function cerrarModal() {
             document.getElementById('modalNuevaCotizacion').classList.add('hidden');
