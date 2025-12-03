@@ -194,7 +194,14 @@
             }
 
             document.getElementById('folio').textContent = cotizacion.folio || '-';
-            document.getElementById('clienteNombre').textContent = cotizacion.cliente_nombre || '-';
+            // Guardar ID del cliente para poder ver sus detalles
+            window.clienteId = cotizacion.cliente_id;
+            const clienteNombreEl = document.getElementById('clienteNombre');
+            clienteNombreEl.textContent = cotizacion.cliente_nombre || '-';
+            clienteNombreEl.style.cursor = 'pointer';
+            clienteNombreEl.style.color = '#2563eb';
+            clienteNombreEl.onclick = () => verClienteDesdeCotizacion(cotizacion.cliente_id);
+            clienteNombreEl.title = 'Clic para ver detalles del cliente';
             document.getElementById('fecha').textContent = utils.formatearFecha(cotizacion.fecha);
             document.getElementById('estado').innerHTML = `
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -259,6 +266,28 @@
 
         function cerrarModalEditar() {
             document.getElementById('modalEditar').classList.add('hidden');
+        }
+
+        function verClienteDesdeCotizacion(clienteId) {
+            // Obtener información del cliente y mostrarla
+            clientesAPI.obtenerPorId(clienteId).then(datos => {
+                const cliente = datos.cliente;
+                const mensaje = `
+Información del Cliente:
+
+Nombre/Razón Social: ${cliente.nombre_razon_social}
+RFC: ${cliente.rfc || 'N/A'}
+Email: ${cliente.email || 'N/A'}
+Teléfono: ${cliente.telefono || 'N/A'}
+Dirección: ${cliente.direccion || 'N/A'}
+Giro: ${cliente.giro || 'N/A'}
+Contacto Principal: ${cliente.contacto_principal || 'N/A'}
+Fecha de Alta: ${utils.formatearFecha(cliente.fecha_alta)}
+                `.trim();
+                alert(mensaje);
+            }).catch(error => {
+                utils.mostrarError('Error al cargar cliente: ' + error.message);
+            });
         }
     </script>
 </body>
