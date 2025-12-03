@@ -320,33 +320,58 @@
         let productosDisponibles = [];
 
         async function abrirModalNuevaCotizacion() {
+            console.log('abrirModalNuevaCotizacion llamado');
             try {
-                if (usuario.rol === 'LECTURA') {
-                    if (typeof utils !== 'undefined' && utils.mostrarError) {
-                        utils.mostrarError('No tienes permisos para crear cotizaciones');
-                    } else {
-                        alert('No tienes permisos para crear cotizaciones');
-                    }
+                // Verificar usuario
+                const usuarioActual = JSON.parse(localStorage.getItem('usuario') || '{}');
+                console.log('Usuario actual:', usuarioActual);
+                
+                if (usuarioActual.rol === 'LECTURA') {
+                    alert('No tienes permisos para crear cotizaciones');
                     return;
                 }
                 
+                // Buscar el modal
                 const modal = document.getElementById('modalNuevaCotizacion');
+                console.log('Modal encontrado:', !!modal);
+                
                 if (!modal) {
                     console.error('No se encontró el modal modalNuevaCotizacion');
-                    alert('Error: No se encontró el formulario de nueva cotización');
+                    alert('Error: No se encontró el formulario de nueva cotización. Por favor, recarga la página.');
                     return;
                 }
                 
+                // Mostrar el modal primero
+                modal.classList.remove('hidden');
+                console.log('Modal mostrado');
+                
                 // Cargar clientes y productos
-                await cargarClientesParaSelect();
-                await cargarProductos();
+                try {
+                    await cargarClientesParaSelect();
+                    console.log('Clientes cargados');
+                } catch (error) {
+                    console.error('Error cargando clientes:', error);
+                }
+                
+                try {
+                    await cargarProductos();
+                    console.log('Productos cargados');
+                } catch (error) {
+                    console.error('Error cargando productos:', error);
+                }
                 
                 // Limpiar formulario
                 const form = document.getElementById('formNuevaCotizacion');
                 if (form) {
                     form.reset();
+                    // Establecer fecha por defecto
+                    const fechaInput = form.querySelector('[name="fecha"]');
+                    if (fechaInput) {
+                        fechaInput.value = new Date().toISOString().split('T')[0];
+                    }
                 }
                 
+                // Limpiar partidas
                 const partidasContainer = document.getElementById('partidasContainer');
                 if (partidasContainer) {
                     partidasContainer.innerHTML = '';
@@ -354,6 +379,7 @@
                 
                 partidasContador = 0;
                 
+                // Actualizar totales
                 if (typeof actualizarTotales === 'function') {
                     actualizarTotales();
                 }
@@ -361,14 +387,20 @@
                 // Agregar primera partida
                 if (typeof agregarPartida === 'function') {
                     agregarPartida();
+                } else {
+                    console.error('La función agregarPartida no está definida');
                 }
                 
-                modal.classList.remove('hidden');
+                console.log('Modal abierto correctamente');
             } catch (error) {
-                console.error('Error abriendo modal:', error);
+                console.error('Error completo abriendo modal:', error);
+                console.error('Stack:', error.stack);
                 alert('Error al abrir el formulario: ' + error.message);
             }
         }
+        
+        // Asegurar que la función esté disponible globalmente
+        window.abrirModalNuevaCotizacion = abrirModalNuevaCotizacion;
 
         async function cargarClientesParaSelect() {
             try {
@@ -482,15 +514,35 @@
         }
 
         function seleccionarProducto(partidaId, productoId) {
-            const producto = productosDisponibles.find(p => p.id === productoId);
-            if (!producto) return;
+            try {
+                const producto = productosDisponibles.find(p => p.id === productoId);
+                if (!producto) {
+                    console.error('Producto no encontrado:', productoId);
+                    return;
+                }
 
-            const partidaDiv = document.getElementById(`partida-${partidaId}`);
-            partidaDiv.querySelector('.partida-descripcion').value = producto.nombre;
-            partidaDiv.querySelector('.partida-precio').value = producto.precio_unitario;
-            partidaDiv.querySelector('.partida-unidad').value = producto.unidad || 'PZA';
-            document.getElementById(`sugerencias-${partidaId}`).classList.add('hidden');
-            calcularPartida(partidaId);
+                const partidaDiv = document.getElementById(`partida-${partidaId}`);
+                if (!partidaDiv) {
+                    console.error('Partida no encontrada:', partidaId);
+                    return;
+                }
+
+                const descripcionInput = partidaDiv.querySelector('.partida-descripcion');
+                const precioInput = partidaDiv.querySelector('.partida-precio');
+                const unidadInput = partidaDiv.querySelector('.partida-unidad');
+                const sugerenciasDiv = document.getElementById(`sugerencias-${partidaId}`);
+
+                if (descripcionInput) descripcionInput.value = producto.nombre || '';
+                if (precioInput) precioInput.value = producto.precio_unitario || 0;
+                if (unidadInput) unidadInput.value = producto.unidad || 'PZA';
+                if (sugerenciasDiv) sugerenciasDiv.classList.add('hidden');
+                
+                if (typeof calcularPartida === 'function') {
+                    calcularPartida(partidaId);
+                }
+            } catch (error) {
+                console.error('Error seleccionando producto:', error);
+            }
         }
 
         function actualizarTotales() {
@@ -562,10 +614,42 @@
         });
 
         function cerrarModal() {
-            document.getElementById('modalNuevaCotizacion').classList.add('hidden');
+            const modal = document.getElementById('modalNuevaCotizacion');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
         }
+        
+        // Asegurar que todas las funciones estén disponibles globalmente
+        window.cerrarModal = cerrarModal;
+        window.agregarPartida = agregarPartida;
+        window.eliminarPartida = eliminarPartida;
+        window.calcularPartida = calcularPartida;
+        window.buscarProducto = buscarProducto;
+        window.seleccionarProducto = seleccionarProducto;
+        window.verCotizacion = verCotizacion;
+        window.enviarCorreo = enviarCorreo;
+        window.abrirModalNuevaCotizacion = abrirModalNuevaCotizacion;
 
-        cargarCotizaciones();
+        // Cargar cotizaciones al iniciar
+        console.log('Estado del documento:', document.readyState);
+        console.log('Token disponible:', !!localStorage.getItem('accessToken'));
+        console.log('Usuario:', usuario);
+        
+        // Esperar a que todo esté listo
+        window.addEventListener('load', () => {
+            console.log('Página completamente cargada, iniciando carga de cotizaciones');
+            setTimeout(() => {
+                cargarCotizaciones();
+            }, 200);
+        });
+        
+        // También intentar cargar si el DOM ya está listo
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(() => {
+                cargarCotizaciones();
+            }, 200);
+        }
     </script>
 </body>
 </html>
