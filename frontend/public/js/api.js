@@ -1,5 +1,5 @@
 // Configuración de la API
-const API_BASE_URL = window.location.origin + '/api';
+const API_BASE_URL = '/api';
 
 // Función para obtener el token de autenticación
 function getAuthToken() {
@@ -27,16 +27,46 @@ async function apiRequest(endpoint, options = {}) {
   };
 
   try {
+    console.log(`API Request: ${API_BASE_URL}${endpoint}`, config);
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const data = await response.json();
+    
+    // Verificar si la respuesta es JSON
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('Respuesta no JSON:', text);
+      throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+    }
 
     if (!response.ok) {
-      throw new Error(data.error || 'Error en la petición');
+      console.error('Error en respuesta:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: data
+      });
+      
+      if (response.status === 401) {
+        // Token inválido o expirado
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('usuario');
+        throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      }
+      
+      throw new Error(data.error || `Error ${response.status}: ${response.statusText}`);
     }
 
     return data;
   } catch (error) {
     console.error('Error en API:', error);
+    // Si es un error de red, agregar más información
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Error de conexión. Verifica tu conexión a internet.');
+    }
     throw error;
   }
 }

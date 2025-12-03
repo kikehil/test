@@ -195,12 +195,41 @@
 
         async function cargarCotizaciones() {
             try {
-                const estado = document.getElementById('filtroEstado').value;
+                console.log('Iniciando carga de cotizaciones...');
+                
+                // Verificar autenticación
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    console.error('No hay token de autenticación');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const estado = document.getElementById('filtroEstado')?.value || '';
                 const params = {};
-                if (estado) params.estado = estado;
+                if (estado && estado !== 'Todos') params.estado = estado;
 
+                console.log('Obteniendo cotizaciones con params:', params);
                 const datos = await cotizacionesAPI.obtenerTodas(params);
+                console.log('Datos recibidos:', datos);
+                
                 const tbody = document.getElementById('tablaCotizaciones');
+                
+                if (!tbody) {
+                    console.error('No se encontró el elemento tablaCotizaciones');
+                    return;
+                }
+
+                if (!datos || !datos.cotizaciones) {
+                    console.error('Estructura de datos incorrecta:', datos);
+                    tbody.innerHTML = '<tr><td colspan="6" class="table-cell text-center text-red-500">Error: Estructura de datos incorrecta</td></tr>';
+                    return;
+                }
+
+                if (datos.cotizaciones.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="table-cell text-center text-gray-500">No hay cotizaciones</td></tr>';
+                    return;
+                }
 
                 tbody.innerHTML = datos.cotizaciones.map(c => `
                     <tr>
@@ -236,8 +265,39 @@
                     </tr>
                 `).join('');
             } catch (error) {
-                console.error('Error cargando cotizaciones:', error);
-                utils.mostrarError('Error al cargar cotizaciones');
+                console.error('Error completo cargando cotizaciones:', error);
+                console.error('Stack:', error.stack);
+                console.error('Error details:', {
+                    message: error.message,
+                    name: error.name,
+                    response: error.response
+                });
+                
+                const tbody = document.getElementById('tablaCotizaciones');
+                if (tbody) {
+                    const errorMsg = error.message || 'Error desconocido al cargar cotizaciones';
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="table-cell text-center text-red-500 p-8">
+                                <div class="flex flex-col items-center space-y-2">
+                                    <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                                    <p class="font-bold">Error al cargar cotizaciones</p>
+                                    <p class="text-sm">${errorMsg}</p>
+                                    <button onclick="cargarCotizaciones()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                        <i class="fas fa-redo mr-2"></i>Reintentar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                // No mostrar alert si ya mostramos el error en la tabla
+                // Solo mostrar si es un error crítico
+                if (error.message && error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+                    window.location.href = '/login.html';
+                }
             }
         }
 
@@ -260,25 +320,54 @@
         let productosDisponibles = [];
 
         async function abrirModalNuevaCotizacion() {
-            if (usuario.rol === 'LECTURA') {
-                utils.mostrarError('No tienes permisos para crear cotizaciones');
-                return;
+            try {
+                if (usuario.rol === 'LECTURA') {
+                    if (typeof utils !== 'undefined' && utils.mostrarError) {
+                        utils.mostrarError('No tienes permisos para crear cotizaciones');
+                    } else {
+                        alert('No tienes permisos para crear cotizaciones');
+                    }
+                    return;
+                }
+                
+                const modal = document.getElementById('modalNuevaCotizacion');
+                if (!modal) {
+                    console.error('No se encontró el modal modalNuevaCotizacion');
+                    alert('Error: No se encontró el formulario de nueva cotización');
+                    return;
+                }
+                
+                // Cargar clientes y productos
+                await cargarClientesParaSelect();
+                await cargarProductos();
+                
+                // Limpiar formulario
+                const form = document.getElementById('formNuevaCotizacion');
+                if (form) {
+                    form.reset();
+                }
+                
+                const partidasContainer = document.getElementById('partidasContainer');
+                if (partidasContainer) {
+                    partidasContainer.innerHTML = '';
+                }
+                
+                partidasContador = 0;
+                
+                if (typeof actualizarTotales === 'function') {
+                    actualizarTotales();
+                }
+                
+                // Agregar primera partida
+                if (typeof agregarPartida === 'function') {
+                    agregarPartida();
+                }
+                
+                modal.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error abriendo modal:', error);
+                alert('Error al abrir el formulario: ' + error.message);
             }
-            
-            // Cargar clientes y productos
-            await cargarClientesParaSelect();
-            await cargarProductos();
-            
-            // Limpiar formulario
-            document.getElementById('formNuevaCotizacion').reset();
-            document.getElementById('partidasContainer').innerHTML = '';
-            partidasContador = 0;
-            actualizarTotales();
-            
-            // Agregar primera partida
-            agregarPartida();
-            
-            document.getElementById('modalNuevaCotizacion').classList.remove('hidden');
         }
 
         async function cargarClientesParaSelect() {
@@ -307,12 +396,17 @@
         }
 
         function agregarPartida() {
-            partidasContador++;
-            const container = document.getElementById('partidasContainer');
-            const partidaDiv = document.createElement('div');
-            partidaDiv.className = 'bg-gray-50 p-3 rounded-lg border';
-            partidaDiv.id = `partida-${partidasContador}`;
-            partidaDiv.innerHTML = `
+            try {
+                partidasContador++;
+                const container = document.getElementById('partidasContainer');
+                if (!container) {
+                    console.error('No se encontró partidasContainer');
+                    return;
+                }
+                const partidaDiv = document.createElement('div');
+                partidaDiv.className = 'bg-gray-50 p-3 rounded-lg border';
+                partidaDiv.id = `partida-${partidasContador}`;
+                partidaDiv.innerHTML = `
                 <div class="grid grid-cols-12 gap-2 items-end">
                     <div class="col-span-2">
                         <label class="block text-xs text-gray-600 mb-1">Cantidad</label>
