@@ -7,10 +7,17 @@
     <!-- Tailwind CSS CDN como fallback -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="/css/output.css" rel="stylesheet" onerror="this.onerror=null;">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Navbar (similar a otros) -->
-    <nav class="bg-white shadow-lg">
+<body class="bg-gradient-to-br from-gray-100 via-blue-50 to-purple-50 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-xl border-b-2 border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
@@ -44,21 +51,26 @@
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Productos / Servicios</h2>
-            <button onclick="abrirModalNuevoProducto()" class="btn-primary">
-                Nuevo Producto
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-3">
+                    <i class="fas fa-box text-white text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Productos / Servicios</h2>
+            </div>
+            <button onclick="abrirModalNuevoProducto()" class="bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold transform hover:-translate-y-0.5">
+                <i class="fas fa-plus mr-2"></i>Nuevo Producto
             </button>
         </div>
 
         <!-- Buscador -->
-        <div class="bg-white shadow rounded-lg p-4 mb-6">
+        <div class="card bg-white mb-6">
             <input type="text" id="buscarProducto" class="input-field" placeholder="Buscar productos..." onkeyup="cargarProductos()">
         </div>
 
         <!-- Tabla de productos -->
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+        <div class="card bg-white overflow-hidden p-0">
+            <table class="min-w-full">
+                <thead>
                     <tr>
                         <th class="table-header">Nombre</th>
                         <th class="table-header">Descripción</th>
@@ -137,7 +149,9 @@
                         <td class="table-cell">${p.categoria || '-'}</td>
                         <td class="table-cell">
                             ${(usuario.rol === 'ADMIN' || usuario.rol === 'VENTAS') ? `
-                                <button onclick="editarProducto(${p.id})" class="text-blue-600 hover:text-blue-800 mr-2">Editar</button>
+                                <button onclick="editarProducto(${p.id})" class="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg hover:bg-purple-200 transition-colors font-medium">
+                                    <i class="fas fa-edit mr-1"></i>Editar
+                                </button>
                             ` : ''}
                         </td>
                     </tr>

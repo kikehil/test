@@ -8,91 +8,62 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="/css/output.css" rel="stylesheet" onerror="this.onerror=null;">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .btn-primary {
-            background-color: #2563eb;
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s;
+            border: none;
         }
-        .btn-primary:hover {
-            background-color: #1d4ed8;
-        }
-        .btn-secondary {
-            background-color: #e5e7eb;
-            color: #1f2937;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s;
-        }
-        .btn-secondary:hover {
-            background-color: #d1d5db;
-        }
-        .input-field {
-            width: 100%;
-            padding: 0.5rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .input-field:focus {
-            outline: none;
-            ring: 2px;
-            ring-color: #3b82f6;
-            border-color: transparent;
-        }
-        .card {
-            background-color: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-        }
-        .table-header {
-            background-color: #f9fafb;
-            padding: 0.75rem 1.5rem;
-            text-align: left;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            color: #6b7280;
-        }
-        .table-cell {
-            padding: 1rem 1.5rem;
-            white-space: nowrap;
-            font-size: 0.875rem;
-            color: #111827;
+        .stat-card-icon {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen">
     <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
+    <nav class="navbar-gradient shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between h-20">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-2xl font-bold text-primary-600">CRM Cotizaciones</h1>
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-white bg-opacity-20 backdrop-blur-lg rounded-lg p-2">
+                                <i class="fas fa-file-invoice-dollar text-white text-2xl"></i>
+                            </div>
+                            <h1 class="text-2xl font-bold text-white">CRM Cotizaciones</h1>
+                        </div>
                     </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="/index.html" class="border-primary-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Dashboard
+                    <div class="hidden sm:ml-8 sm:flex sm:space-x-4">
+                        <a href="/index.html" class="bg-white bg-opacity-20 backdrop-blur-lg text-white inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border-2 border-white border-opacity-30">
+                            <i class="fas fa-chart-line mr-2"></i> Dashboard
                         </a>
-                        <a href="/cotizaciones.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Cotizaciones
+                        <a href="/cotizaciones.html" class="text-white hover:bg-white hover:bg-opacity-20 backdrop-blur-lg inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                            <i class="fas fa-file-alt mr-2"></i> Cotizaciones
                         </a>
-                        <a href="/clientes.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Clientes
+                        <a href="/clientes.html" class="text-white hover:bg-white hover:bg-opacity-20 backdrop-blur-lg inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                            <i class="fas fa-users mr-2"></i> Clientes
                         </a>
-                        <a href="/productos.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Productos
+                        <a href="/productos.html" class="text-white hover:bg-white hover:bg-opacity-20 backdrop-blur-lg inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                            <i class="fas fa-box mr-2"></i> Productos
                         </a>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <span id="usuarioNombre" class="text-sm text-gray-700 mr-4"></span>
-                    <button onclick="authAPI.logout()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">
-                        Cerrar Sesión
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white bg-opacity-20 backdrop-blur-lg rounded-lg px-4 py-2">
+                        <span id="usuarioNombre" class="text-sm text-white font-medium"></span>
+                    </div>
+                    <button onclick="authAPI.logout()" class="bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-gray-100 font-medium shadow-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
                     </button>
                 </div>
             </div>
@@ -100,59 +71,59 @@
     </nav>
 
     <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
         <!-- Estadísticas principales -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+            <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                <div class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-blue-100 text-sm font-medium mb-1">Total Cotizado</p>
+                            <p id="totalCotizado" class="text-3xl font-bold">$0.00</p>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Cotizado</dt>
-                                <dd id="totalCotizado" class="text-lg font-medium text-gray-900">$0.00</dd>
-                            </dl>
+                        <div class="stat-card-icon rounded-full p-4">
+                            <i class="fas fa-dollar-sign text-3xl text-white"></i>
                         </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-blue-100 text-sm">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span>Total acumulado</span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+            <div class="stat-card bg-gradient-to-br from-green-500 to-green-600 text-white">
+                <div class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-green-100 text-sm font-medium mb-1">Total Aceptado</p>
+                            <p id="totalAceptado" class="text-3xl font-bold">$0.00</p>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Aceptado</dt>
-                                <dd id="totalAceptado" class="text-lg font-medium text-gray-900">$0.00</dd>
-                            </dl>
+                        <div class="stat-card-icon rounded-full p-4">
+                            <i class="fas fa-check-circle text-3xl text-white"></i>
                         </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-green-100 text-sm">
+                        <i class="fas fa-chart-line mr-1"></i>
+                        <span>Cotizaciones aceptadas</span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
+            <div class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                <div class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-purple-100 text-sm font-medium mb-1">Total Pagado</p>
+                            <p id="totalPagado" class="text-3xl font-bold">$0.00</p>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Pagado</dt>
-                                <dd id="totalPagado" class="text-lg font-medium text-gray-900">$0.00</dd>
-                            </dl>
+                        <div class="stat-card-icon rounded-full p-4">
+                            <i class="fas fa-money-bill-wave text-3xl text-white"></i>
                         </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-purple-100 text-sm">
+                        <i class="fas fa-wallet mr-1"></i>
+                        <span>Pagos recibidos</span>
                     </div>
                 </div>
             </div>
@@ -161,15 +132,25 @@
         <!-- Gráfica y Tablas -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Gráfica Mensual -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Cotizaciones Mensuales</h2>
+            <div class="card bg-white">
+                <div class="flex items-center mb-4 pb-4 border-b-2 border-gray-100">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg p-3 mr-3">
+                        <i class="fas fa-chart-area text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Cotizaciones Mensuales</h2>
+                </div>
                 <canvas id="graficaMensual"></canvas>
             </div>
 
             <!-- Cotizaciones por Estatus -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Por Estatus</h2>
-                <div id="porEstatus" class="space-y-2">
+            <div class="card bg-white">
+                <div class="flex items-center mb-4 pb-4 border-b-2 border-gray-100">
+                    <div class="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg p-3 mr-3">
+                        <i class="fas fa-tasks text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Por Estatus</h2>
+                </div>
+                <div id="porEstatus" class="space-y-3">
                     <!-- Se llena dinámicamente -->
                 </div>
             </div>
@@ -178,20 +159,23 @@
         <!-- Tablas -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Top Clientes -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-medium text-gray-900">Top 5 Clientes</h2>
+            <div class="card bg-white">
+                <div class="flex items-center mb-4 pb-4 border-b-2 border-gray-100">
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-3 mr-3">
+                        <i class="fas fa-trophy text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Top 5 Clientes</h2>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full">
+                        <thead>
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cotizaciones</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                <th class="table-header">Cliente</th>
+                                <th class="table-header">Cotizaciones</th>
+                                <th class="table-header">Total</th>
                             </tr>
                         </thead>
-                        <tbody id="topClientes" class="bg-white divide-y divide-gray-200">
+                        <tbody id="topClientes" class="bg-white">
                             <!-- Se llena dinámicamente -->
                         </tbody>
                     </table>
@@ -199,21 +183,24 @@
             </div>
 
             <!-- Cotizaciones Recientes -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-medium text-gray-900">Cotizaciones Recientes</h2>
+            <div class="card bg-white">
+                <div class="flex items-center mb-4 pb-4 border-b-2 border-gray-100">
+                    <div class="bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg p-3 mr-3">
+                        <i class="fas fa-clock text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Cotizaciones Recientes</h2>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full">
+                        <thead>
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Folio</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                <th class="table-header">Folio</th>
+                                <th class="table-header">Cliente</th>
+                                <th class="table-header">Estado</th>
+                                <th class="table-header">Total</th>
                             </tr>
                         </thead>
-                        <tbody id="cotizacionesRecientes" class="bg-white divide-y divide-gray-200">
+                        <tbody id="cotizacionesRecientes" class="bg-white">
                             <!-- Se llena dinámicamente -->
                         </tbody>
                     </table>
@@ -277,33 +264,48 @@
 
                 // Top clientes
                 const topClientesTbody = document.getElementById('topClientes');
-                topClientesTbody.innerHTML = datos.topClientes.map(c => `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${c.nombre_razon_social}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.cantidad_cotizaciones}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${utils.formatearMoneda(c.total_cotizado)}</td>
+                topClientesTbody.innerHTML = datos.topClientes.map((c, index) => `
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="table-cell">
+                            <div class="flex items-center">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">
+                                    ${index + 1}
+                                </div>
+                                <span class="font-semibold text-gray-900">${c.nombre_razon_social}</span>
+                            </div>
+                        </td>
+                        <td class="table-cell">
+                            <span class="badge badge-info">${c.cantidad_cotizaciones}</span>
+                        </td>
+                        <td class="table-cell font-bold text-blue-600">${utils.formatearMoneda(c.total_cotizado)}</td>
                     </tr>
                 `).join('');
 
                 // Cotizaciones recientes
                 const recientesTbody = document.getElementById('cotizacionesRecientes');
-                recientesTbody.innerHTML = datos.recientes.map(c => `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${c.folio}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.cliente_nombre}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                c.estado === 'Aceptada' ? 'bg-green-100 text-green-800' :
-                                c.estado === 'Rechazada' ? 'bg-red-100 text-red-800' :
-                                c.estado === 'Enviada' ? 'bg-blue-100 text-blue-800' :
-                                'bg-yellow-100 text-yellow-800'
-                            }">
+                recientesTbody.innerHTML = datos.recientes.map(c => {
+                    const estadoClass = c.estado === 'Aceptada' ? 'badge-success' :
+                                       c.estado === 'Rechazada' ? 'badge-danger' :
+                                       c.estado === 'Enviada' ? 'badge-info' :
+                                       'badge-warning';
+                    return `
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="table-cell">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-invoice text-blue-500 mr-2"></i>
+                                <span class="font-bold text-gray-900">${c.folio}</span>
+                            </div>
+                        </td>
+                        <td class="table-cell text-gray-700">${c.cliente_nombre}</td>
+                        <td class="table-cell">
+                            <span class="badge ${estadoClass}">
                                 ${c.estado}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${utils.formatearMoneda(c.total)}</td>
+                        <td class="table-cell font-bold text-green-600">${utils.formatearMoneda(c.total)}</td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
 
             } catch (error) {
                 console.error('Error cargando dashboard:', error);

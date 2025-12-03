@@ -7,10 +7,17 @@
     <!-- Tailwind CSS CDN como fallback -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="/css/output.css" rel="stylesheet" onerror="this.onerror=null;">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gradient-to-br from-gray-100 via-blue-50 to-purple-50 min-h-screen">
     <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-white shadow-xl border-b-2 border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
@@ -44,21 +51,26 @@
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Clientes</h2>
-            <button onclick="abrirModalNuevoCliente()" class="btn-primary">
-                Nuevo Cliente
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg p-3">
+                    <i class="fas fa-users text-white text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">Clientes</h2>
+            </div>
+            <button onclick="abrirModalNuevoCliente()" class="bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold transform hover:-translate-y-0.5">
+                <i class="fas fa-user-plus mr-2"></i>Nuevo Cliente
             </button>
         </div>
 
         <!-- Buscador -->
-        <div class="bg-white shadow rounded-lg p-4 mb-6">
+        <div class="card bg-white mb-6">
             <input type="text" id="buscarCliente" class="input-field" placeholder="Buscar por nombre, email o RFC..." onkeyup="cargarClientes()">
         </div>
 
         <!-- Tabla de clientes -->
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+        <div class="card bg-white overflow-hidden p-0">
+            <table class="min-w-full">
+                <thead>
                     <tr>
                         <th class="table-header">Nombre / Razón Social</th>
                         <th class="table-header">RFC</th>
@@ -142,10 +154,16 @@
                         <td class="table-cell">${c.email || '-'}</td>
                         <td class="table-cell">${c.telefono || '-'}</td>
                         <td class="table-cell">
-                            <button onclick="verCliente(${c.id})" class="text-primary-600 hover:text-primary-800 mr-2">Ver</button>
-                            ${(usuario.rol === 'ADMIN' || usuario.rol === 'VENTAS') ? `
-                                <button onclick="editarCliente(${c.id})" class="text-blue-600 hover:text-blue-800 mr-2">Editar</button>
-                            ` : ''}
+                            <div class="flex space-x-2">
+                                <button onclick="verCliente(${c.id})" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 transition-colors font-medium">
+                                    <i class="fas fa-eye mr-1"></i>Ver
+                                </button>
+                                ${(usuario.rol === 'ADMIN' || usuario.rol === 'VENTAS') ? `
+                                    <button onclick="editarCliente(${c.id})" class="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg hover:bg-purple-200 transition-colors font-medium">
+                                        <i class="fas fa-edit mr-1"></i>Editar
+                                    </button>
+                                ` : ''}
+                            </div>
                         </td>
                     </tr>
                 `).join('');

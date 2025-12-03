@@ -7,10 +7,17 @@
     <!-- Tailwind CSS CDN como fallback -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="/css/output.css" rel="stylesheet" onerror="this.onerror=null;">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gradient-to-br from-gray-100 via-blue-50 to-purple-50 min-h-screen">
     <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-white shadow-xl border-b-2 border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
@@ -52,16 +59,30 @@
         </div>
 
         <div id="cotizacionContent" class="hidden">
-            <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <div class="card bg-white mb-6">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900" id="folio">-</h2>
-                        <p class="text-gray-600 mt-1">Cliente: <span id="clienteNombre">-</span></p>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg p-2">
+                                <i class="fas fa-file-invoice-dollar text-white text-xl"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent" id="folio">-</h2>
+                        </div>
+                        <p class="text-gray-600 mt-1">
+                            <i class="fas fa-user mr-2 text-blue-500"></i>
+                            Cliente: <span id="clienteNombre" class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors">-</span>
+                        </p>
                     </div>
                     <div class="flex space-x-2" id="botonesAccion">
-                        <button onclick="cotizacionesAPI.generarPDF(cotizacionId)" class="btn-secondary">Descargar PDF</button>
-                        <button onclick="enviarCorreo()" class="btn-primary">Enviar por Correo</button>
-                        <button id="btnEditar" onclick="abrirModalEditar()" class="btn-primary hidden">Editar</button>
+                        <button onclick="cotizacionesAPI.generarPDF(cotizacionId)" class="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors font-medium shadow-md">
+                            <i class="fas fa-file-pdf mr-2"></i>PDF
+                        </button>
+                        <button onclick="enviarCorreo()" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all font-medium shadow-md">
+                            <i class="fas fa-envelope mr-2"></i>Enviar
+                        </button>
+                        <button id="btnEditar" onclick="abrirModalEditar()" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium shadow-md hidden">
+                            <i class="fas fa-edit mr-2"></i>Editar
+                        </button>
                     </div>
                 </div>
 
@@ -86,8 +107,13 @@
             </div>
 
             <!-- Partidas -->
-            <div class="bg-white shadow rounded-lg p-6 mb-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Partidas</h3>
+            <div class="card bg-white mb-6">
+                <div class="flex items-center mb-4 pb-4 border-b-2 border-gray-100">
+                    <div class="bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg p-3 mr-3">
+                        <i class="fas fa-list text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900">Partidas</h3>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -107,8 +133,13 @@
             </div>
 
             <!-- Información adicional -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Información Adicional</h3>
+            <div class="card bg-white">
+                <div class="flex items-center mb-4 pb-4 border-b-2 border-gray-100">
+                    <div class="bg-gradient-to-r from-teal-500 to-green-500 rounded-lg p-3 mr-3">
+                        <i class="fas fa-info-circle text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900">Información Adicional</h3>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <p class="text-sm text-gray-500">Condiciones de Pago</p>

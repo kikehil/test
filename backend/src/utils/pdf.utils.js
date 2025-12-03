@@ -320,10 +320,30 @@ async function generarPDFCotizacion(cotizacionId, empresaId) {
     }
 
     // QR Code para ver en línea
-    const publicUrl = `${process.env.APP_URL || 'http://localhost:3000'}/cotizacion/${cotizacion.token_publico || cotizacionId}/public`;
-    const qrCodeDataURL = await QRCode.toDataURL(publicUrl);
-    const qrImageBytes = Buffer.from(qrCodeDataURL.split(',')[1], 'base64');
-    const qrImage = await pdfDoc.embedPng(qrImageBytes);
+    try {
+      const publicUrl = `${process.env.APP_URL || 'http://localhost:3000'}/cotizacion/${cotizacion.token_publico || cotizacionId}/public`;
+      const qrCodeDataURL = await QRCode.toDataURL(publicUrl, { errorCorrectionLevel: 'M', width: 200 });
+      const qrImageBytes = Buffer.from(qrCodeDataURL.split(',')[1], 'base64');
+      const qrImage = await pdfDoc.embedPng(qrImageBytes);
+      
+      page.drawImage(qrImage, {
+        x: width - 100,
+        y: 50,
+        width: 60,
+        height: 60,
+      });
+
+      page.drawText('Escanea para ver en línea', {
+        x: width - 100,
+        y: 40,
+        size: 8,
+        font: helveticaFont,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+    } catch (qrError) {
+      console.warn('Error generando QR code, continuando sin QR:', qrError.message);
+      // Continuar sin QR si hay error
+    }
     
     page.drawImage(qrImage, {
       x: width - 100,
