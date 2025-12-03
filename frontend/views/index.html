@@ -4,8 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Cotizaciones - Dashboard</title>
-    <link href="/css/output.css" rel="stylesheet">
+    <!-- Tailwind CSS CDN como fallback -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/css/output.css" rel="stylesheet" onerror="this.onerror=null;">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #1f2937;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .input-field:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: #3b82f6;
+            border-color: transparent;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        .table-header {
+            background-color: #f9fafb;
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        .table-cell {
+            padding: 1rem 1.5rem;
+            white-space: nowrap;
+            font-size: 0.875rem;
+            color: #111827;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <!-- Navbar -->
